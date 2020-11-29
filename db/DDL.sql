@@ -6,7 +6,8 @@ CREATE TABLE telemetry(
     telemetry_id serial primary key,
     battery smallint NOT NULL,
     device_time TIMESTAMP NOT NULL,
-     current_video varchar(255),
+    server_time TIMESTAMP NOT NULL,
+    current_video varchar(255),
     tablet_id int NOT NULL ,
     CONSTRAINT percent CHECK ( battery BETWEEN 0 and 100)
 );
