@@ -65,6 +65,7 @@ func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 		tabletName   *string
 		battery      int
 		deviceTime   string
+		serverTime   string
 		currentVideo *string
 	}{}
 	if err := rows.Scan(
@@ -72,6 +73,7 @@ func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 		t.tabletName,
 		t.battery,
 		t.deviceTime,
+		t.serverTime,
 		t.currentVideo,
 	); err != nil {
 		return err
@@ -82,7 +84,7 @@ func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 	tablet.Telemetry = append(tablet.Telemetry, &Telemetry{
 		Battery:      t.battery,
 		DeviceTime:   t.deviceTime,
-		ServerTime:   t.deviceTime,
+		ServerTime:   t.serverTime,
 		CurrentVideo: t.currentVideo,
 	})
 
