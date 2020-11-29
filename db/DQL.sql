@@ -1,4 +1,4 @@
-CREATE FUNCTION function_select (in in_id int) RETURNS TABLE (
+CREATE FUNCTION get_telemetry (in in_id int) RETURNS TABLE (
     tablet_id int,
     tablet_name varchar(60),
     battery smallint,
