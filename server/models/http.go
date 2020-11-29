@@ -61,7 +61,7 @@ func handleAddTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) {
 
 	lastTime := time.Unix(0, 0)
 	if len(previous.Telemetry) > 0 {
-		if parsed, err := time.Parse(time.RFC3339, previous.Telemetry[0].Timestamp); err != nil {
+		if parsed, err := time.Parse(time.RFC3339, previous.Telemetry[0].ServerTime); err != nil {
 			log.Printf("Error parsing time: %s", err)
 			utils.WriteJsonInternalError(rw, "Error parsing time")
 			return

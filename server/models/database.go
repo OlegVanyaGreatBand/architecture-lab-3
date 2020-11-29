@@ -41,7 +41,7 @@ func (s *Store) AddTelemetry(data *TelemetryData) error {
 	}
 	_ = rows.Close()
 
-	query := "INSERT INTO telemetry (battery, device_time, timestamp, current_video) VALUES "
+	query := "INSERT INTO telemetry (battery, device_time, server_time, current_video) VALUES "
 	for _, t := range data.Telemetry {
 		var video string
 		if t.CurrentVideo != nil {
@@ -49,7 +49,7 @@ func (s *Store) AddTelemetry(data *TelemetryData) error {
 		} else {
 			video = "NULL"
 		}
-		query += fmt.Sprintf("(%d, %s, %s, %s)", t.Battery, t.DeviceTime, t.Timestamp, video)
+		query += fmt.Sprintf("(%d, %s, %s, %s)", t.Battery, t.DeviceTime, t.ServerTime, video)
 	}
 	query += ";"
 
@@ -82,7 +82,7 @@ func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 	tablet.Telemetry = append(tablet.Telemetry, &Telemetry{
 		Battery:      t.battery,
 		DeviceTime:   t.deviceTime,
-		Timestamp:    t.deviceTime,
+		ServerTime:   t.deviceTime,
 		CurrentVideo: t.currentVideo,
 	})
 

@@ -7,8 +7,8 @@ type TelemetryData struct {
 }
 
 type Telemetry struct {
-	Battery int `json:"battery"`
-	DeviceTime string `json:"deviceTime"`
-	Timestamp string `json:"timestamp"`
+	Battery      int     `json:"battery"`
+	DeviceTime   string  `json:"deviceTime"`
+	ServerTime   string  `json:"timestamp"`
 	CurrentVideo *string `json:"current_video"`
 }
