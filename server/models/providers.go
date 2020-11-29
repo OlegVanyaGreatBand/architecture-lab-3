@@ -1,4 +1,4 @@
-package channels
+package models
 
 import "github.com/google/wire"
 
