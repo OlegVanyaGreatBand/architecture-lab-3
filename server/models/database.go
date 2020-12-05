@@ -15,7 +15,7 @@ func NewStore(db *sql.DB) *Store {
 }
 
 func (s *Store) GetTelemetry(tabletId int) (*TelemetryData, error) {
-	query, err := s.db.Prepare("select * from get_telemetry($1) order by server_time desc limit 50")
+	query, err := s.db.Prepare("select * from get_telemetry($1)")
 	if err != nil {
 		return nil, err
 	}
