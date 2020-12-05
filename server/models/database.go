@@ -25,7 +25,9 @@ func (s *Store) GetTelemetry(tabletId int) (*TelemetryData, error) {
 		return nil, err
 	}
 
-	res := &TelemetryData{}
+	res := &TelemetryData{
+		Telemetry: []*Telemetry{},
+	}
 	for rows.Next() {
 		if err := scanTelemetry(res, rows); err != nil {
 			return nil, err
@@ -74,10 +76,10 @@ func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 	t := &struct {
 		tabletId     int
 		tabletName   string
-		battery      int
-		deviceTime   string
-		serverTime   string
-		currentVideo string
+		battery      *int
+		deviceTime   *string
+		serverTime   *string
+		currentVideo *string
 	}{}
 	if err := rows.Scan(
 		&t.tabletId,
@@ -92,12 +94,14 @@ func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 
 	tablet.TabletId = t.tabletId
 	tablet.TabletName = &t.tabletName
-	tablet.Telemetry = append(tablet.Telemetry, &Telemetry{
-		Battery:      t.battery,
-		DeviceTime:   t.deviceTime,
-		ServerTime:   t.serverTime,
-		CurrentVideo: &t.currentVideo,
-	})
+	if t.battery != nil && t.deviceTime != nil && t.serverTime != nil {
+		tablet.Telemetry = append(tablet.Telemetry, &Telemetry{
+			Battery:      *t.battery,
+			DeviceTime:   *t.deviceTime,
+			ServerTime:   *t.serverTime,
+			CurrentVideo: t.currentVideo,
+		})
+	}
 
 	return nil
 }

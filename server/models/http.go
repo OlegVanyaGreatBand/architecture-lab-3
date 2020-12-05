@@ -82,7 +82,7 @@ func handleAddTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) {
 	diff := currentTime.Sub(lastTime)
 	// ignore if 10 seconds haven't passed
 	if diff.Seconds() < 10 {
-		log.Printf("Ignoring request: %v seconds passed", diff)
+		log.Printf("Ignoring request: %v passed", diff)
 		// still return 200 ok - user don't know that we've ignored him
 		utils.WriteJsonResult(rw, struct {
 			Message string `json:"message"`

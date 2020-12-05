@@ -4,8 +4,10 @@ const TabletClient = require('./tablets/TabletClient');
 
 const client = new TabletClient('http://localhost:8080/');
 
+const yellow = str => `\x1b[0;33m${str}\x1b[0m`;
+
 (async () => {
-    console.log('=== Scenario 1 - non-existing tablet ===');
+    console.log(yellow('=== Scenario 1 - non-existing tablet ==='));
     try {
         const telemetry = await client.getTelemetry(0);
         console.log(telemetry);
@@ -13,7 +15,7 @@ const client = new TabletClient('http://localhost:8080/');
         console.error(error);
     }
 
-    console.log('=== Scenario 2 - existing tablet ===');
+    console.log(yellow('=== Scenario 2 - existing tablet ==='));
     try {
         const telemetry = await client.getTelemetry(1);
         console.log(telemetry);
@@ -21,7 +23,7 @@ const client = new TabletClient('http://localhost:8080/');
         console.error(error);
     }
 
-    console.log('=== Scenario 3 - inserting ===');
+    console.log(yellow('=== Scenario 3 - inserting ==='));
     try {
         const response = await client.setTelemetry(1, [
             {
@@ -40,7 +42,7 @@ const client = new TabletClient('http://localhost:8080/');
         console.error(error);
     }
 
-    console.log('=== Scenario 4 - inserting before 10s passed ===');
+    console.log(yellow('=== Scenario 4 - inserting before 10s passed ==='));
     try {
         const response = await client.setTelemetry(1, [
             {
@@ -54,7 +56,7 @@ const client = new TabletClient('http://localhost:8080/');
         console.error(error);
     }
 
-    console.log('=== Scenario 5 - reading inserted data ===');
+    console.log(yellow('=== Scenario 5 - reading inserted data ==='));
     try {
         const telemetry = await client.getTelemetry(1);
         console.log(telemetry);
