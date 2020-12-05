@@ -17,12 +17,12 @@ module.exports = class HttpJsonClient {
     }
 
     post(path, data) {
-        return this.#request(this.baseUrl + path, {
+        return this.#request(path, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-        });
+        }, JSON.stringify(data));
     }
 
     async #request(url, options, body) {
@@ -30,7 +30,20 @@ module.exports = class HttpJsonClient {
             const req = http.request(url, options, res => {
                 const { statusCode } = res;
                 if (statusCode !== 200) {
-                    reject(`Request Failed. Code ${statusCode}`);
+                    let data = '';
+                    res.setEncoding('utf8');
+                    res.on('data', chunk => {
+                        data += chunk;
+                    });
+                    res.on('end', () => {
+                        try {
+                            reject({ code: statusCode, body: JSON.parse(data) });
+                        } catch (e) {
+                            reject(e);
+                        }
+                    });
+
+                    return;
                 }
                 let data = '';
                 res.setEncoding('utf8');
@@ -49,6 +62,7 @@ module.exports = class HttpJsonClient {
             if (body) {
                 req.write(body);
             }
+
             req.end();
         });
     }

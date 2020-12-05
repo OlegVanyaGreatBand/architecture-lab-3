@@ -15,7 +15,8 @@ var httpPortNumber = flag.Int("p", 8080, "HTTP port number")
 func NewDbConnection() (*sql.DB, error) {
 	conn := &db.Connection{
 		DbName:     "multimedia_classroom",
-		User:       "user",
+		User:       "multimedia_admin",
+		Password: 	"pa$$w0rd",
 		Host:       "localhost",
 		DisableSSL: true,
 	}
@@ -30,7 +31,7 @@ func main() {
 	if server, err := ComposeApiServer(HttpPortNumber(*httpPortNumber)); err == nil {
 		// Start it.
 		go func() {
-			log.Println("Starting chat server...")
+			log.Println("Starting multimedia classroom server...")
 
 			err := server.Start()
 			if err == http.ErrServerClosed {
@@ -49,6 +50,6 @@ func main() {
 			log.Printf("Error stopping the server: %s", err)
 		}
 	} else {
-		log.Fatalf("Cannot initialize chat server: %s", err)
+		log.Fatalf("Cannot initialize multimedia server: %s", err)
 	}
 }

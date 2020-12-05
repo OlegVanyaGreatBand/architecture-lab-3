@@ -8,10 +8,13 @@ module.exports = class TabletClient extends HttpJsonClient {
     }
 
     getTelemetry(id) {
-        return this.get(`${this.baseUrl}/${id}`);
+        return this.get(id);
     }
 
-    setTelemetry(telemetry) {
-        return this.post(this.baseUrl, telemetry);
+    setTelemetry(tabletId, telemetry) {
+        return this.post(this.baseUrl, {
+            id: tabletId,
+            telemetry
+        });
     }
 }
