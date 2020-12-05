@@ -15,7 +15,12 @@ func NewStore(db *sql.DB) *Store {
 }
 
 func (s *Store) GetTelemetry(tabletId int) (*TelemetryData, error) {
-	rows, err := s.db.Query("SELECT * FROM get_telemetry(?);", tabletId)
+	query, err := s.db.Prepare("select * from get_telemetry($1)")
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := query.Query(tabletId)
 	if err != nil {
 		return nil, err
 	}
@@ -35,13 +40,18 @@ func (s *Store) GetTelemetry(tabletId int) (*TelemetryData, error) {
 }
 
 func (s *Store) AddTelemetry(data *TelemetryData) error {
-	rows, err := s.db.Query("SELECT id FROM tablet WHERE id = ?;", data.TabletId)
+	q, err := s.db.Prepare("SELECT tablet_id FROM tablet WHERE tablet_id=$1")
 	if err != nil {
-		return errors.New("tablet not found")
+		return errors.New(fmt.Sprintf("tablet %d not found", data.TabletId))
 	}
+	rows, err := q.Query(data.TabletId)
+	if err != nil {
+		return errors.New(fmt.Sprintf("tablet %d not found", data.TabletId))
+	}
+
 	_ = rows.Close()
 
-	query := "INSERT INTO telemetry (battery, device_time, server_time, current_video) VALUES "
+	query := "INSERT INTO telemetry (tablet_id, battery, device_time, server_time, current_video) VALUES "
 	for _, t := range data.Telemetry {
 		var video string
 		if t.CurrentVideo != nil {
@@ -49,8 +59,9 @@ func (s *Store) AddTelemetry(data *TelemetryData) error {
 		} else {
 			video = "NULL"
 		}
-		query += fmt.Sprintf("(%d, %s, %s, %s)", t.Battery, t.DeviceTime, t.ServerTime, video)
+		query += fmt.Sprintf("(%d, %d, '%s', '%s', '%s'),", data.TabletId, t.Battery, t.DeviceTime, t.ServerTime, video)
 	}
+	query = query[:len(query) - 1]
 	query += ";"
 
 	if _, err = s.db.Exec(query); err != nil {
@@ -62,30 +73,30 @@ func (s *Store) AddTelemetry(data *TelemetryData) error {
 func scanTelemetry(tablet *TelemetryData, rows *sql.Rows) error {
 	t := &struct {
 		tabletId     int
-		tabletName   *string
+		tabletName   string
 		battery      int
 		deviceTime   string
 		serverTime   string
-		currentVideo *string
+		currentVideo string
 	}{}
 	if err := rows.Scan(
-		t.tabletId,
-		t.tabletName,
-		t.battery,
-		t.deviceTime,
-		t.serverTime,
-		t.currentVideo,
+		&t.tabletId,
+		&t.tabletName,
+		&t.battery,
+		&t.deviceTime,
+		&t.serverTime,
+		&t.currentVideo,
 	); err != nil {
 		return err
 	}
 
 	tablet.TabletId = t.tabletId
-	tablet.TabletName = t.tabletName
+	tablet.TabletName = &t.tabletName
 	tablet.Telemetry = append(tablet.Telemetry, &Telemetry{
 		Battery:      t.battery,
 		DeviceTime:   t.deviceTime,
 		ServerTime:   t.serverTime,
-		CurrentVideo: t.currentVideo,
+		CurrentVideo: &t.currentVideo,
 	})
 
 	return nil

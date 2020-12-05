@@ -39,6 +39,14 @@ func handlerGetTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) 
 		message := fmt.Sprintf("Error making query to the db: %s", err)
 		log.Printf(message)
 		utils.WriteJsonInternalError(rw, message)
+		return
+	}
+
+	if telemetry.TabletName == nil {
+		message := fmt.Sprintf("Tablet with id %d not found", tabletId)
+		log.Printf(message)
+		utils.WriteJsonBadRequest(rw, message)
+		return
 	}
 
 	utils.WriteJsonResult(rw, telemetry)
@@ -46,8 +54,8 @@ func handlerGetTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) 
 
 func handleAddTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) {
 	var telemetry TelemetryData
-	if err := json.NewDecoder(r.Body).Decode(telemetry); err != nil {
-		log.Printf("Error decoding channel input: %s", err)
+	if err := json.NewDecoder(r.Body).Decode(&telemetry); err != nil {
+		log.Printf("Error decoding input: %s", err)
 		utils.WriteJsonBadRequest(rw, "Invalid telemetry data")
 		return
 	}
@@ -70,11 +78,11 @@ func handleAddTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) {
 		}
 	}
 
-	currentTime := time.Now()
-	diff := currentTime.Unix() - lastTime.Unix()
+	currentTime := time.Now().UTC()
+	diff := currentTime.Sub(lastTime)
 	// ignore if 10 seconds haven't passed
-	if diff < 10 {
-		log.Printf("Ignoring request: %d/10 seconds passed", diff)
+	if diff.Seconds() < 10 {
+		log.Printf("Ignoring request: %v seconds passed", diff)
 		// still return 200 ok - user don't know that we've ignored him
 		utils.WriteJsonResult(rw, struct {
 			Message string `json:"message"`
@@ -84,6 +92,17 @@ func handleAddTelemetry(r *http.Request, rw http.ResponseWriter, store *Store) {
 		return
 	}
 
+	for _, t := range telemetry.Telemetry {
+		if r, err := time.Parse("2006-01-02T15:04:05.000Z", t.DeviceTime); err != nil {
+			message := fmt.Sprintf("Invalid time format: %s", t.DeviceTime)
+			log.Printf(message)
+			utils.WriteJsonBadRequest(rw, message)
+			return
+		} else {
+			t.DeviceTime = r.Format("2006-01-02 15:04:05")
+		}
+		t.ServerTime = currentTime.Format("2006-01-02 15:04:05")
+	}
 	if err := store.AddTelemetry(&telemetry); err != nil {
 		log.Printf("Inserting error: %s", err)
 		utils.WriteJsonInternalError(rw, "Так не буде")

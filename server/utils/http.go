@@ -8,17 +8,17 @@ import (
 
 func WriteJsonBadRequest(rw http.ResponseWriter, message string)  {
 	writeJson(rw, http.StatusBadRequest, struct {
-		error string
+		Error string `json:"error"`
 	}{
-		error: message,
+		Error: message,
 	})
 }
 
 func WriteJsonInternalError(rw http.ResponseWriter, message string)  {
 	writeJson(rw, http.StatusInternalServerError, struct {
-		error string
+		Error string `json:"error"`
 	}{
-		error: message,
+		Error: message,
 	})
 }
 
