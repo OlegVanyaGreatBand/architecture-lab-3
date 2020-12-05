@@ -8,7 +8,7 @@ CREATE FUNCTION get_telemetry (in in_id int) RETURNS TABLE (
 ) AS $BODY$
 
     SELECT (tablet.tablet_id, tablet.tablet_name, telemetry.battery, telemetry.device_time, telemetry.server_time, telemetry.current_video) FROM tablet
-    INNER JOIN telemetry on tablet.tablet_id = telemetry.tablet_id
+    LEFT JOIN telemetry on tablet.tablet_id = telemetry.tablet_id
     WHERE tablet.tablet_id = in_id
     ORDER BY telemetry.device_time DESC, telemetry.server_time DESC
     LIMIT 50;
